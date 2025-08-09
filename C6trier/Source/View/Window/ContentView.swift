@@ -10,14 +10,21 @@ import RealityKit
 import RealityKitContent
 
 struct ContentView: View {
+    @Environment(AppModel.self) private var appModel
 
     var body: some View {
         VStack {
-            Model3D(named: "Scene", bundle: realityKitContentBundle)
-                .padding(.bottom, 50)
-
-            Text("Hello, user!")
-
+            switch appModel.immersiveSpaceState {
+            case .open:
+                ControlView()
+                    .padding(.bottom, 50)
+            case .inTransition:
+                ProgressView()
+            case .closed:
+                Text("Hello, user!")
+                Model3D(named: "Scene", bundle: realityKitContentBundle)
+                    .padding(.bottom, 50)
+            }
             ToggleImmersiveSpaceButton()
         }
         .padding()
@@ -26,5 +33,9 @@ struct ContentView: View {
 
 #Preview(windowStyle: .automatic) {
     ContentView()
-        .environment(AppModel())
+        .environment({
+            let model = AppModel()
+            model.immersiveSpaceState = .open
+            return model
+        }())
 }

@@ -5,31 +5,33 @@ struct ControlView: View {
     
     var body: some View {
         ZStack {
-            // 배경 원
-            if viewModel.backgroundShape.shapeType == .circle {
-                Circle()
-                    .fill(viewModel.backgroundShape.color)
-                    .frame(width: viewModel.backgroundShape.radius * 2,
-                           height: viewModel.backgroundShape.radius * 2)
-            }
+            // 배경 원을 별도의 뷰로 분 리
+            BackgroundShapeView(shape: viewModel.backgroundShape)
             
-            // 음악 도형들
-            ForEach(viewModel.musicShapes) { shape in
-                Group {
-                    switch shape.shapeType {
-                    case .circle:
-                        Circle()
-                            .fill(shape.color)
-                    case .rectangle:
-                        Rectangle()
-                            .fill(shape.color)
-                    }
-                }
-                .frame(width: shape.radius * 2, height: shape.radius * 2)
-                .position(x: shape.position.x + viewModel.backgroundShape.radius,
-                         y: shape.position.y + viewModel.backgroundShape.radius)
-                // ... 제스처 핸들러 등
-            }
+            // 음악 도형들을 별도의 뷰로 분리
+            MusicShapesView(viewModel: viewModel,
+                          backgroundRadius: viewModel.backgroundShape.radius)
+        }
+        .frame(width: viewModel.backgroundShape.radius * 2,
+               height: viewModel.backgroundShape.radius * 2)
+    }
+}
+
+// 배경 도형을 위한 하위 뷰
+private struct BackgroundShapeView: View {
+    let shape: Shape2DModel
+    
+    var body: some View {
+        if shape.shapeType == .circle {
+            Circle()
+                .fill(shape.color)
+                .frame(width: shape.radius * 2,
+                       height: shape.radius * 2)
         }
     }
+}
+
+
+#Preview {
+    ControlView()
 }

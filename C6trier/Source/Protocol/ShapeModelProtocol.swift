@@ -1,3 +1,5 @@
+import SwiftUI
+
 protocol ShapeModelProtocol: Identifiable {
     var name: String { get }
     var color: Color { get }

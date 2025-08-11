@@ -85,3 +85,5 @@ iOSInjectionProject/
 # User-specific 설정
 *.user
 *.userprefs
+SceneMetadataList.json
+Packages/RealityKitContent/Package.realitycomposerpro/WorkspaceData/

@@ -7,8 +7,8 @@
 
 def Xform "Root"
 {
-    reorder nameChildren = ["Sphere", "Sphere_1", "Floor"]
-    def Sphere "Sphere" (
+    reorder nameChildren = ["sky", "center", "floor", "fx", "clap"]
+    def Sphere "sky" (
         active = true
         prepend apiSchemas = ["MaterialBindingAPI"]
         customData = {
@@ -16,8 +16,9 @@ def Xform "Root"
         }
     )
     {
-        rel material:binding = </Root/Sphere/DefaultMaterial>
-        double radius = 1
+        reorder nameChildren = ["DefaultMaterial", "center"]
+        rel material:binding = </Root/sky/DefaultMaterial>
+        double radius = 10
         quatf xformOp:orient = (1, -6.5413386e-15, -1.2598649e-7, -5.1920953e-8)
         float3 xformOp:scale = (-1, 1, 1)
         float3 xformOp:translate = (0, 0, 0)
@@ -27,7 +28,7 @@ def Xform "Root"
         {
             token outputs:mtlx:surface
             token outputs:realitykit:vertex
-            prepend token outputs:surface.connect = </Root/Sphere/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+            token outputs:surface.connect = </Root/sky/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
 
             def Shader "DefaultSurfaceShader"
             {
@@ -39,28 +40,118 @@ def Xform "Root"
                 token outputs:surface
             }
         }
-
-        def RealityKitComponent "PointLight"
-        {
-            uniform token info:id = "RealityKit.PointLight"
-        }
     }
 
-    def Sphere "Sphere_1" (
+    def Cube "fx" (
         active = true
         prepend apiSchemas = ["MaterialBindingAPI"]
     )
     {
-        rel material:binding = </Root/Sphere_1/DefaultMaterial>
-        double radius = 0.1
+        reorder nameChildren = ["fx_wave", "DefaultMaterial", "PointLight", "SpatialAudio"]
+        rel material:binding = </Root/fx/DefaultMaterial>
+        double size = 0.5
         quatf xformOp:orient = (1, 0, 0, 0)
         float3 xformOp:scale = (1, 1, 1)
+        float3 xformOp:translate = (0, 0.25, -4)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Material "DefaultMaterial"
+        {
+            reorder nameChildren = ["DefaultSurfaceShader", "Sphere_2"]
+            token outputs:mtlx:surface
+            token outputs:realitykit:vertex
+            token outputs:surface.connect = </Root/fx/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+
+            def Shader "DefaultSurfaceShader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (1, 0.97442013, 0) (
+                    colorSpace = "srgb_displayp3"
+                )
+                float inputs:roughness = 0.75
+                token outputs:surface
+            }
+        }
+
+        def RealityKitComponent "PointLight"
+        {
+            float attenuationFalloffExponent = 1.5
+            float attenuationRadius = 2
+            float3 color = (1, 0.9339807, 0.9457537)
+            uniform token info:id = "RealityKit.PointLight"
+            float intensity = 2000
+        }
+
+        def RealityKitComponent "SpatialAudio"
+        {
+            float directivityFocus = 0
+            uniform token info:id = "RealityKit.SpatialAudio"
+            float rolloffFactor = 0
+        }
+
+        def RealityKitAudioFile "fx_wave"
+        {
+            uniform asset file = @Sound/fx.wave@
+            uniform bool shouldLoop = 0
+        }
+    }
+
+    def Sphere "floor" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+        customData = {
+            float3 rotationEulerHint = (0, -2.5197298e-7, -1.03841906e-7)
+        }
+    )
+    {
+        rel material:binding = </Root/floor/DefaultMaterial>
+        double radius = 10
+        float2 ui:nodegraph:node:pos = (20, 20)
+        int ui:nodegraph:node:stackingOrder = 1
+        quatf xformOp:orient = (0.99999994, 0, 0, 0)
+        float3 xformOp:scale = (0.99999994, 2.2204459e-16, 0.99999994)
         float3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Material "DefaultMaterial"
         {
-            prepend token outputs:surface.connect = </Root/Sphere_1/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+            token outputs:mtlx:surface
+            token outputs:realitykit:vertex
+            token outputs:surface.connect = </Root/floor/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+
+            def Shader "DefaultSurfaceShader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.018548703, 0.0033644622, 0.11128906) (
+                    colorSpace = "srgb_displayp3"
+                )
+                float inputs:roughness = 0.75
+                token outputs:surface
+            }
+        }
+    }
+
+    def Sphere "clap" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        reorder nameChildren = ["DefaultMaterial", "Cone", "PointLight"]
+        rel material:binding = </Root/clap/DefaultMaterial>
+        double radius = 0.25
+        float2 ui:nodegraph:node:pos = (20, 20)
+        int ui:nodegraph:node:stackingOrder = 1
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        float3 xformOp:translate = (0, 0.25, -8)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Material "DefaultMaterial"
+        {
+            reorder nameChildren = ["DefaultSurfaceShader", "Cone"]
+            token outputs:mtlx:surface
+            token outputs:realitykit:vertex
+            token outputs:surface.connect = </Root/clap/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
 
             def Shader "DefaultSurfaceShader"
             {
@@ -73,47 +164,37 @@ def Xform "Root"
 
         def RealityKitComponent "PointLight"
         {
+            float attenuationFalloffExponent = 1.5
+            float3 color = (1, 0.98296213, 0.9290233)
             uniform token info:id = "RealityKit.PointLight"
         }
     }
 
-    def Sphere "Floor" (
+    def Cone "center" (
         active = true
         prepend apiSchemas = ["MaterialBindingAPI"]
-        customData = {
-            float3 rotationEulerHint = (0, -2.5197298e-7, -1.03841906e-7)
-        }
     )
     {
-        rel material:binding = </Root/Floor/DefaultMaterial>
-        double radius = 1
-        float2 ui:nodegraph:node:pos = (20, 20)
-        int ui:nodegraph:node:stackingOrder = 1
+        uniform token axis = "Y"
+        double height = 0.5
+        rel material:binding = </Root/center/DefaultMaterial>
+        double radius = 0.25
         quatf xformOp:orient = (0.99999994, 0, 0, 0)
-        float3 xformOp:scale = (1, 2.220446e-16, 1)
-        float3 xformOp:translate = (0, 0, 0)
+        float3 xformOp:scale = (0.99999994, 0.99999994, 0.99999994)
+        float3 xformOp:translate = (0, 0.49999997, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Material "DefaultMaterial"
         {
-            token outputs:mtlx:surface
-            token outputs:realitykit:vertex
-            token outputs:surface.connect = </Root/Floor/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+            token outputs:surface.connect = </Root/center/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
 
             def Shader "DefaultSurfaceShader"
             {
                 uniform token info:id = "UsdPreviewSurface"
-                color3f inputs:diffuseColor = (0.018548703, 0.0033644622, 0.11128906) (
-                    colorSpace = "srgb_displayp3"
-                )
+                color3f inputs:diffuseColor = (1, 1, 1)
                 float inputs:roughness = 0.75
                 token outputs:surface
             }
-        }
-
-        def RealityKitComponent "PointLight"
-        {
-            uniform token info:id = "RealityKit.PointLight"
         }
     }
 }

@@ -29,6 +29,8 @@ private struct ShapeView: View {
             case .circle:
                 Circle()
                     .fill(shape.color)
+                    .hoverEffect(.highlight)
+                    .help(shape.name)
                     .gesture(
                         DragGesture()
                             .onChanged { value in
@@ -38,6 +40,8 @@ private struct ShapeView: View {
             case .rectangle:
                 Rectangle()
                     .fill(shape.color)
+                    .hoverEffect(.highlight)
+                    .help(shape.name)
             }
         }
         .frame(width: shape.radius * 2, height: shape.radius * 2)

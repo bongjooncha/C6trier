@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct ControlView: View {
-    @State private var viewModel = ControlViewModel()
+    @Environment(AppModel.self) var appModel
+    private var viewModel: ControlViewModel { appModel.controlVM }
     
     var body: some View {
         ZStack {
@@ -34,4 +35,5 @@ private struct BackgroundShapeView: View {
 
 #Preview {
     ControlView()
+        .environment(AppModel())
 }

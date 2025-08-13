@@ -7,7 +7,7 @@
 
 def Xform "Root"
 {
-    reorder nameChildren = ["sky", "center", "floor", "fx", "clap"]
+    reorder nameChildren = ["sky", "center", "floor", "fx", "clap", "TapGesture"]
     def Sphere "sky" (
         active = true
         prepend apiSchemas = ["MaterialBindingAPI"]
@@ -47,7 +47,7 @@ def Xform "Root"
         prepend apiSchemas = ["MaterialBindingAPI"]
     )
     {
-        reorder nameChildren = ["fx_wave", "DefaultMaterial", "PointLight", "SpatialAudio"]
+        reorder nameChildren = ["fx_wave", "SpatialAudio_1", "Collider", "RCP_BehaviorsContainer", "OnTap", "DefaultMaterial", "PointLight", "SpatialAudio"]
         rel material:binding = </Root/fx/DefaultMaterial>
         double size = 0.5
         quatf xformOp:orient = (1, 0, 0, 0)
@@ -73,13 +73,15 @@ def Xform "Root"
             }
         }
 
-        def RealityKitComponent "PointLight"
+        def RealityKitComponent "PointLight" (
+            active = false
+        )
         {
             float attenuationFalloffExponent = 1.5
             float attenuationRadius = 2
             float3 color = (1, 0.9339807, 0.9457537)
             uniform token info:id = "RealityKit.PointLight"
-            float intensity = 2000
+            float intensity = 50000
         }
 
         def RealityKitComponent "SpatialAudio"
@@ -93,6 +95,64 @@ def Xform "Root"
         {
             uniform asset file = @Sound/fx.wave@
             uniform bool shouldLoop = 0
+        }
+
+        def RealityKitComponent "Collider"
+        {
+            uint group = 1
+            uniform token info:id = "RealityKit.Collider"
+            uint mask = 4294967295
+            token type = "Default"
+
+            def RealityKitStruct "Shape"
+            {
+                token shapeType = "Box"
+
+                def RealityKitStruct "pose"
+                {
+                }
+            }
+        }
+
+        def RealityKitComponent "RCP_BehaviorsContainer"
+        {
+            rel behaviors = </Root/fx/OnTap>
+            uniform token info:id = "RCP.BehaviorsContainer"
+        }
+
+        def Preliminary_Behavior "OnTap"
+        {
+            rel actions = </Root/fx/OnTap/Action>
+            uniform bool exclusive
+            rel triggers = </Root/fx/OnTap/Trigger>
+
+            def Preliminary_Trigger "Trigger"
+            {
+                rel affectedObjects = </Root/fx>
+                token info:id = "TapGesture"
+            }
+
+            def Preliminary_Action "Action"
+            {
+                rel affectedObjects = </Root>
+                rel animationLibraryKey = </Root/TapGesture>
+                rel animationLibraryKeyOverrideKey = </Root/fx/OnTap/Trigger>
+                token info:id = "PlayTimeline"
+                int loops = 0
+                int performCount = 1
+                token type = "serial"
+            }
+        }
+
+        def RealityKitComponent "AudioLibrary"
+        {
+            uniform token info:id = "RealityKit.AudioLibrary"
+
+            def RealityKitDict "resources"
+            {
+                string[] keys = ["fx.wave"]
+                rel values = </Root/fx_wave>
+            }
         }
     }
 
@@ -127,6 +187,22 @@ def Xform "Root"
                 )
                 float inputs:roughness = 0.75
                 token outputs:surface
+            }
+        }
+
+        def RealityKitComponent "RigidBody"
+        {
+            uniform token info:id = "RealityKit.RigidBody"
+
+            def RealityKitStruct "massFrame"
+            {
+                def RealityKitStruct "m_pose"
+                {
+                }
+            }
+
+            def RealityKitStruct "material"
+            {
             }
         }
     }
@@ -196,6 +272,35 @@ def Xform "Root"
                 token outputs:surface
             }
         }
+    }
+
+    def RealityKitTimeline "TapGesture"
+    {
+        def RealityKitTrack "Track"
+        {
+            def RealityKitAction "Play_Audio"
+            {
+                string actionKind = "audio"
+                string audioResourceName = "fx.wave"
+                bool controlPlayback = 0
+                double duration = 3.7238125
+                double gain = 0
+                uniform token info:id = "C7D27117-2BF4-47B8-AE36-24C6D6D8CC1F"
+                double startTime = 0
+                rel target = </Root/fx>
+
+                def RealityKitStruct "handoffType"
+                {
+                    token type = "stop"
+                }
+            }
+        }
+    }
+
+    def RealityKitAudioFile "fx_wave"
+    {
+        uniform asset file = @Sound/fx.wave@
+        uniform bool shouldLoop = 0
     }
 }
 

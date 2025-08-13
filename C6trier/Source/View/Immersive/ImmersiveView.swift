@@ -1,25 +1,51 @@
-//
-//  ImmersiveView.swift
-//  C6trier
-//
-//  Created by Apple on 8/8/25.
-//
-
 import SwiftUI
 import RealityKit
 import RealityKitContent
 
 struct ImmersiveView: View {
-
+    @Environment(AppModel.self) private var appModel
+    
+    // 2D(UI, cm) → 3D(World, m) 변환
+    private func map2Dto3D(_ p: SIMD2<Float>, height: Float = 0.5) -> SIMD3<Float> {
+        SIMD3<Float>(p.x * 0.1, height, p.y * 0.1) 
+    }
+    
     var body: some View {
-        RealityView { content in
-            // Add the initial RealityKit content
-            if let immersiveContentEntity = try? await Entity(named: "Immersive", in: realityKitContentBundle) {
-                content.add(immersiveContentEntity)
+        // 2D 위치 찾기 (없으면 기본값)
+        let k1Pos2D = appModel.controlVM.musicShapes.first(where: { $0.name == "kick_1" })?.position ?? SIMD2<Float>(-30, -60)
+        let k2Pos2D = appModel.controlVM.musicShapes.first(where: { $0.name == "kick_2" })?.position ?? SIMD2<Float>(30, -60)
+        let k1World = map2Dto3D(k1Pos2D)
+        let k2World = map2Dto3D(k2Pos2D)
 
-                // Put skybox here.  See example in World project available at
-                // https://developer.apple.com/
+        RealityView { content in
+            // RCP 씬 추가
+            if let immersive = try? await Entity(named: "Immersive", in: realityKitContentBundle) {
+                content.add(immersive)
             }
+            
+            // 월드 앵커 + 초기 엔티티
+            let root = AnchorEntity(world: matrix_identity_float4x4)
+            root.name = "RootAnchor"
+            content.add(root)
+
+            // KickEntity 생성 (이제 name만 전달, 나머지는 ControlViewModel에서)
+            let k1 = KickEntity(name: "kick_1", viewModel: appModel.controlVM, worldPosition: k1World)
+            let k2 = KickEntity(name: "kick_2", viewModel: appModel.controlVM, worldPosition: k2World)
+            root.addChild(k1)
+            root.addChild(k2)
+        } update: { content in
+            // 매 프레임 현재 캡처된 위치로 이동
+            func updateKick(_ name: String, to pos: SIMD3<Float>) {
+                if let root = content.entities.first(where: { $0.name == "RootAnchor" }) {
+                    root.findEntity(named: name)?.position = pos
+                } else {
+                    for e in content.entities {
+                        if let t = e.findEntity(named: name) { t.position = pos; break }
+                    }
+                }
+            }
+            updateKick("kick_1", to: k1World)
+            updateKick("kick_2", to: k2World)
         }
     }
 }

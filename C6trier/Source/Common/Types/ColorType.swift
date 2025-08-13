@@ -1,4 +1,5 @@
 import SwiftUI
+import RealityKit
 
 struct ColorType {
     struct MaterialColor: Codable {
@@ -21,5 +22,16 @@ struct ColorType {
             self.blue = Float(blue)
             self.alpha = Float(alpha)
         }
+        
+//        var toMaterialColor: RealityKit.Material.BaseColor {
+//            RealityKit.Material.BaseColor(
+//                tint: UIColor(
+//                    red: CGFloat(red),
+//                    green: CGFloat(green),
+//                    blue: CGFloat(blue),
+//                    alpha: CGFloat(alpha)
+//                )
+//            )
+//        }
     }
 }

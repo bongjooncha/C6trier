@@ -19,30 +19,23 @@ struct ImmersiveView: View {
 
         RealityView { content in
             // RCP 씬 추가
-            if let immersive = try? await Entity(named: "Immersive", in: realityKitContentBundle) {
-                content.add(immersive)
-            }
-            
-            // 월드 앵커 + 초기 엔티티
-            let root = AnchorEntity(world: matrix_identity_float4x4)
-            root.name = "RootAnchor"
-            content.add(root)
+            guard let immersive = try? await Entity(named: "Immersive", in: realityKitContentBundle),
+                let root = immersive.findEntity(named: "Root") else {
+                    print("Immersive entity not found")
+                    return
+                }
+            content.add(immersive)
 
             // KickEntity 생성 (이제 name만 전달, 나머지는 ControlViewModel에서)
             let k1 = KickEntity(name: "kick_1", viewModel: appModel.controlVM, worldPosition: k1World)
             let k2 = KickEntity(name: "kick_2", viewModel: appModel.controlVM, worldPosition: k2World)
-            root.addChild(k1)
-            root.addChild(k2)
+            immersive.addChild(k1)
+            immersive.addChild(k2)
         } update: { content in
-            // 매 프레임 현재 캡처된 위치로 이동
+            guard let root = content.entities.first?.findEntity(named: "Root") else { return }
+            
             func updateKick(_ name: String, to pos: SIMD3<Float>) {
-                if let root = content.entities.first(where: { $0.name == "RootAnchor" }) {
-                    root.findEntity(named: name)?.position = pos
-                } else {
-                    for e in content.entities {
-                        if let t = e.findEntity(named: name) { t.position = pos; break }
-                    }
-                }
+                root.findEntity(named: name)?.position = pos
             }
             updateKick("kick_1", to: k1World)
             updateKick("kick_2", to: k2World)

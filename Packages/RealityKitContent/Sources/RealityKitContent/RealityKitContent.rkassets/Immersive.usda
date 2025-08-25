@@ -73,17 +73,6 @@ def Xform "Root"
             }
         }
 
-        def RealityKitComponent "PointLight" (
-            active = false
-        )
-        {
-            float attenuationFalloffExponent = 1.5
-            float attenuationRadius = 2
-            float3 color = (1, 0.9339807, 0.9457537)
-            uniform token info:id = "RealityKit.PointLight"
-            float intensity = 50000
-        }
-
         def RealityKitComponent "SpatialAudio"
         {
             float directivityFocus = 0
@@ -106,6 +95,8 @@ def Xform "Root"
 
             def RealityKitStruct "Shape"
             {
+                float3 extent = (0.5, 0.5, 0.5)
+                float radius = 0.25
                 token shapeType = "Box"
 
                 def RealityKitStruct "pose"
@@ -153,6 +144,11 @@ def Xform "Root"
                 string[] keys = ["fx.wave"]
                 rel values = </Root/fx_wave>
             }
+        }
+
+        def RealityKitComponent "InputTarget"
+        {
+            uniform token info:id = "RealityKit.InputTarget"
         }
     }
 
@@ -257,11 +253,13 @@ def Xform "Root"
         double radius = 0.25
         quatf xformOp:orient = (0.99999994, 0, 0, 0)
         float3 xformOp:scale = (0.99999994, 0.99999994, 0.99999994)
-        float3 xformOp:translate = (0, 0.49999997, 0)
+        float3 xformOp:translate = (0, 0.25, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Material "DefaultMaterial"
         {
+            token outputs:mtlx:surface
+            token outputs:realitykit:vertex
             token outputs:surface.connect = </Root/center/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
 
             def Shader "DefaultSurfaceShader"
@@ -271,6 +269,12 @@ def Xform "Root"
                 float inputs:roughness = 0.75
                 token outputs:surface
             }
+        }
+
+        def RealityKitComponent "Accessibility"
+        {
+            uniform token info:id = "RealityKit.Accessibility"
+            bool isEnabled = 1
         }
     }
 
@@ -301,6 +305,20 @@ def Xform "Root"
     {
         uniform asset file = @Sound/fx.wave@
         uniform bool shouldLoop = 0
+    }
+
+    def Material "Material"
+    {
+        token outputs:mtlx:surface.connect = </Root/Material/PreviewSurface.outputs:out>
+        token outputs:realitykit:vertex
+        float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (335.25, 100.5)
+
+        def Shader "PreviewSurface"
+        {
+            uniform token info:id = "ND_UsdPreviewSurface_surfaceshader"
+            token outputs:out
+            float2 ui:nodegraph:node:pos = (93.5, 100.5)
+        }
     }
 }
 

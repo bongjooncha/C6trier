@@ -7,7 +7,7 @@ struct ImmersiveView: View {
     
     // 2D(UI, cm) → 3D(World, m) 변환
     private func map2Dto3D(_ p: SIMD2<Float>, height: Float = 0.5) -> SIMD3<Float> {
-        SIMD3<Float>(p.x * 0.1, height, p.y * 0.1) 
+        SIMD3<Float>(p.x * 0.1, height/2, p.y * 0.1) 
     }
     
     var body: some View {
@@ -19,8 +19,7 @@ struct ImmersiveView: View {
 
         RealityView { content in
             // RCP 씬 추가
-            guard let immersive = try? await Entity(named: "Immersive", in: realityKitContentBundle),
-                let root = immersive.findEntity(named: "Root") else {
+            guard let immersive = try? await Entity(named: "Immersive", in: realityKitContentBundle) else {
                     print("Immersive entity not found")
                     return
                 }
@@ -29,6 +28,25 @@ struct ImmersiveView: View {
             // KickEntity 생성 (이제 name만 전달, 나머지는 ControlViewModel에서)
             let k1 = KickEntity(name: "kick_1", viewModel: appModel.controlVM, worldPosition: k1World)
             let k2 = KickEntity(name: "kick_2", viewModel: appModel.controlVM, worldPosition: k2World)
+            k1.components.set(HoverEffectComponent())
+            k1.components.set(InputTargetComponent())
+            k1.generateCollisionShapes(recursive: true)
+            k2.components.set(HoverEffectComponent())
+            k2.components.set(InputTargetComponent())
+            k2.components.set(CollisionComponent(shapes: [.generateCapsule(height:0.1, radius: 0.5)]))
+            
+            
+            // fx와 clap에도 Hover 추가
+            if let fx = immersive.findEntity(named: "fx") {
+                fx.components.set(HoverEffectComponent())
+            }
+            
+            if let clap = immersive.findEntity(named: "clap") {
+                clap.components.set(HoverEffectComponent())
+                clap.components.set(InputTargetComponent())
+                clap.components.set(CollisionComponent(shapes: [.generateCapsule(height:0.1, radius: 0.05)]))
+            }
+            
             immersive.addChild(k1)
             immersive.addChild(k2)
         } update: { content in
